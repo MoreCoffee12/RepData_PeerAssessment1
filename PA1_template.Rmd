@@ -89,3 +89,47 @@ Imputing the data did seem to change the histogram, the data is more tightly clu
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+1. Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
+
+```{r}
+dataClean$day <- weekdays(as.Date(dataClean$date))
+dataClean$day <- gsub("Monday","Weekday",dataClean$day)
+dataClean$day <- gsub("Tuesday","Weekday",dataClean$day)
+dataClean$day <- gsub("Wednesday","Weekday",dataClean$day)
+dataClean$day <- gsub("Thursday","Weekday",dataClean$day)
+dataClean$day <- gsub("Friday","Weekday",dataClean$day)
+dataClean$day <- gsub("Saturday","Weekend",dataClean$day)
+dataClean$day <- gsub("Sunday","Weekend",dataClean$day)
+dataClean$dayFactor <- factor(dataClean$day)
+```
+
+2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+
+```{r}
+dataCleanWeekday <- dataClean[as.numeric(dataClean$dayFactor)==1,]
+dataCleanWeekend <- dataClean[as.numeric(dataClean$dayFactor)==2,]
+dataDailyProfileWeekday <- ddply(dataCleanWeekday,.(interval),summarize,stepsMean=mean(steps, na.rm = TRUE))
+dataDailyProfileWeekend <- ddply(dataCleanWeekend,.(interval),summarize,stepsMean=mean(steps, na.rm = TRUE))
+
+library(ggplot2)
+
+p1 <- ggplot() + geom_line(data = dataDailyProfileWeekday, aes(x = interval, y = stepsMean, color = "Weekday")) 
+p1 <- p1 + xlab('Interval')
+p1 <- p1 + ylab('Average steps')
+p1 <- p1 + ylim(0,225)
+p1 <- p1 + labs(color="Legend")
+
+
+p2 <- ggplot() + geom_line(data = dataDailyProfileWeekend, aes(x = interval, y = stepsMean, color = "Weekend")) 
+p2 <- p2 + xlab('Interval')
+p2 <- p2 + ylab('Average steps')
+p2 <- p2 + ylim(0,225)
+p2 <- p2 + labs(color="Legend")
+
+library(gridExtra)
+print(grid.arrange(p1, p2, nrow=2))
+
+```
+
+
